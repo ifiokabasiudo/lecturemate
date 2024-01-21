@@ -161,11 +161,10 @@ export default function Signup({ user }: any) {
             <Icon as={IoLogoGoogle} />
             <Text>Continue with Google</Text>
           </Flex> */}
-          {/* , country: "" */}
           <WIPAlert isOpen={isOpen} onClose={onClose} />
           <Flex direction="column" mt={10}>
             <Formik
-              initialValues={{ username: "", email: "", password: "" }}
+              initialValues={{ username: "", email: "", country: "", password: "" }}
               onSubmit={async (values, actions) => {
                 const { data, error } = await supabase.auth.signUp({
                   email: values.email,
@@ -173,7 +172,7 @@ export default function Signup({ user }: any) {
                   options: {
                     data: {
                       username: values.username,
-                      // country: values.country,
+                      country: values.country,
                     },
                     emailRedirectTo: `${location.origin}/auth/callback`,
                   },
@@ -287,7 +286,7 @@ export default function Signup({ user }: any) {
                   </Field>
 
                   
-                  {/* <Field name="country">
+                  <Field name="country">
                     {({ field, form }: any) => (
                       <FormControl
                         isInvalid={
@@ -306,7 +305,7 @@ export default function Signup({ user }: any) {
                         <FormErrorMessage>{form.errors.name}</FormErrorMessage>
                       </FormControl>
                     )}
-                  </Field> */}
+                  </Field>
 
                   <Field name="password">
                     {({ field, form }: any) => (
