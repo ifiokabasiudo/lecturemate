@@ -79,6 +79,33 @@ const Chat = ({ user2 }: any) => {
   const [fileUpload, setFileUpload] = useState<boolean>(false);
   const fileName = localStorage.getItem("file");
 
+  let username:
+  | string
+  | number
+  | boolean
+  | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+  | Iterable<React.ReactNode>
+  | React.ReactPortal
+  | React.PromiseLikeOfReactNode
+  | null
+  | undefined;
+
+let country:
+  | string
+  | number
+  | boolean
+  | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+  | Iterable<React.ReactNode>
+  | React.ReactPortal
+  | React.PromiseLikeOfReactNode
+  | null
+  | undefined;
+
+if (user2) {
+  username = user2.user_metadata.username;
+  country = user2.user_metadata.country;
+}
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const {
     isOpen: isDrawerOpen,
@@ -403,6 +430,7 @@ const Chat = ({ user2 }: any) => {
             retryQuery: history,
             userId: user2?.id,
             nameOfFile: fileName,
+            country: country,
             query: undefined,
           }),
         }
@@ -542,6 +570,7 @@ const Chat = ({ user2 }: any) => {
           query: "Give a summary of the resource provided",
           userId: user2?.id,
           nameOfFile: fileName,
+          country: country,
           retryQuery: undefined,
         }),
       }
@@ -572,21 +601,6 @@ const Chat = ({ user2 }: any) => {
   //   // { name: "Sky Waiters", img: "/skywaiter.png", role: "Investor", link: "#" },
   // ];
   const toast = useToast();
-
-  let username:
-    | string
-    | number
-    | boolean
-    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-    | Iterable<React.ReactNode>
-    | React.ReactPortal
-    | React.PromiseLikeOfReactNode
-    | null
-    | undefined;
-
-  if (user2) {
-    username = user2.user_metadata.username;
-  }
 
   // useEffect(() => {
   //   const eventSource = new EventSource("https://crazy-rose-leg-warmers.cyclic.app/api/api")
@@ -1040,6 +1054,7 @@ const Chat = ({ user2 }: any) => {
                                 query: values.query,
                                 userId: user2?.id,
                                 nameOfFile: fileName,
+                                country: country,
                                 retryQuery: undefined,
                               }),
                             }

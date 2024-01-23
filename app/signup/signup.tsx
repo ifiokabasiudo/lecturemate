@@ -164,7 +164,7 @@ export default function Signup({ user }: any) {
           <WIPAlert isOpen={isOpen} onClose={onClose} />
           <Flex direction="column" mt={10}>
             <Formik
-              initialValues={{ username: "", email: "", password: "" }}
+              initialValues={{ username: "", email: "", country: "", password: "" }}
               onSubmit={async (values, actions) => {
                 const { data, error } = await supabase.auth.signUp({
                   email: values.email,
@@ -172,6 +172,7 @@ export default function Signup({ user }: any) {
                   options: {
                     data: {
                       username: values.username,
+                      country: values.country,
                     },
                     emailRedirectTo: `${location.origin}/auth/callback`,
                   },
@@ -276,6 +277,28 @@ export default function Signup({ user }: any) {
                           focusBorderColor="#53AF28"
                           placeholder="you@example.com"
                           type="email"
+                          variant="outline"
+                          mb={2}
+                        />
+                        <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                      </FormControl>
+                    )}
+                  </Field>
+
+                  
+                  <Field name="country">
+                    {({ field, form }: any) => (
+                      <FormControl
+                        isInvalid={
+                          form.errors.country && form.touched.country
+                        }
+                      >
+                        <FormLabel>Country</FormLabel>
+                        <Input
+                          {...field}
+                          focusBorderColor="#53AF28"
+                          placeholder="e.g United States"
+                          type="text"
                           variant="outline"
                           mb={2}
                         />
