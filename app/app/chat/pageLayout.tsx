@@ -130,13 +130,14 @@ const Chat = ({ user2 }: any) => {
     const matchResult1 = content.match(regexPattern1);
     const textBeforePattern1 = matchResult1 ? matchResult1[1].trim() : content;
 
-    const regexPattern2 = /^(.*?)(?=--\/\/)/;
-    const matchResult2 = textBeforePattern1.match(regexPattern2);
-    const finalText = matchResult2
-      ? matchResult2[1].trim()
-      : textBeforePattern1;
+    // const regexPattern2 = /^(.*?)(?=--\/\/)/;
+    // const matchResult2 = textBeforePattern1.match(regexPattern2);
+    // const finalText = matchResult2
+    //   ? matchResult2[1].trim()
+    //   : textBeforePattern1;
 
-    return finalText;
+    return textBeforePattern1;
+    // finalText;
   };
 
   // Map requests to extract questions
