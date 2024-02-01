@@ -1320,7 +1320,7 @@
 //                   )}
 //                 </Formik>
 //               </Flex>
-//             )}            
+//             )}
 //             <Flex w={"400px"} h={"30px"} px={4} py={2} borderLeft= "1px" borderRight= "1px" borderBottom= "1px" bg={"transparent"} borderColor={"#B8B9BB"} borderBottomLeftRadius={"md"} borderBottomRightRadius={"md"}></Flex>
 //           </Flex>
 //           {/* </Flex> */}
@@ -1368,7 +1368,6 @@
 // };
 
 // export default Chat;
-
 
 "use client";
 
@@ -1452,31 +1451,55 @@ const Chat = ({ user2 }: any) => {
   const fileName = localStorage.getItem("file");
 
   let username:
-  | string
-  | number
-  | boolean
-  | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-  | Iterable<React.ReactNode>
-  | React.ReactPortal
-  | React.PromiseLikeOfReactNode
-  | null
-  | undefined;
+    | string
+    | number
+    | boolean
+    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+    | Iterable<React.ReactNode>
+    | React.ReactPortal
+    | React.PromiseLikeOfReactNode
+    | null
+    | undefined;
 
-let country:
-  | string
-  | number
-  | boolean
-  | React.ReactElement<any, string | React.JSXElementConstructor<any>>
-  | Iterable<React.ReactNode>
-  | React.ReactPortal
-  | React.PromiseLikeOfReactNode
-  | null
-  | undefined;
+  let country:
+    | string
+    | number
+    | boolean
+    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+    | Iterable<React.ReactNode>
+    | React.ReactPortal
+    | React.PromiseLikeOfReactNode
+    | null
+    | undefined;
 
-if (user2) {
-  username = user2.user_metadata.username;
-  country = user2.user_metadata.country;
-}
+  let role:
+    | string
+    | number
+    | boolean
+    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+    | Iterable<React.ReactNode>
+    | React.ReactPortal
+    | React.PromiseLikeOfReactNode
+    | null
+    | undefined;
+
+  let institute:
+    | string
+    | number
+    | boolean
+    | React.ReactElement<any, string | React.JSXElementConstructor<any>>
+    | Iterable<React.ReactNode>
+    | React.ReactPortal
+    | React.PromiseLikeOfReactNode
+    | null
+    | undefined;
+
+  if (user2) {
+    username = user2.user_metadata.username;
+    country = user2.user_metadata.country;
+    role = user2.user_metadata.role;
+    institute = user2.user_metadata.institute;
+  }
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const {
@@ -1803,6 +1826,8 @@ if (user2) {
             userId: user2?.id,
             nameOfFile: fileName,
             country: country,
+            role: role,
+            institute: institute,
             query: undefined,
           }),
         }
@@ -1943,6 +1968,8 @@ if (user2) {
           userId: user2?.id,
           nameOfFile: fileName,
           country: country,
+          role: role,
+          institute: institute,
           retryQuery: undefined,
         }),
       }
@@ -2251,9 +2278,9 @@ if (user2) {
                       fontWeight={"bold"}
                     >
                       If note was just uploaded please wait...
-                      <br/>
+                      <br />
                       else,
-                      <br/>
+                      <br />
                       If chat was cleared, start chatting!
                     </Text>
                   )}
@@ -2427,6 +2454,8 @@ if (user2) {
                                 userId: user2?.id,
                                 nameOfFile: fileName,
                                 country: country,
+                                role: role,
+                                institute: institute,
                                 retryQuery: undefined,
                               }),
                             }
