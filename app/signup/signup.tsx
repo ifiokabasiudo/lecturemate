@@ -355,7 +355,7 @@ export default function Signup({ user }: any) {
                           <Input
                             {...field}
                             focusBorderColor="#53AF28"
-                            placeholder="e.g United States"
+                            placeholder="e.g School"
                             type="text"
                             variant="outline"
                             border={"2px"}
