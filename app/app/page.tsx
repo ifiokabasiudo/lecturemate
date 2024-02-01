@@ -14,6 +14,7 @@ async function MyApp() {
 
       return (
         <>
+        {/* <PageLayout /> */}
            {user ? <PageLayout /> : <Signin />}
         </>
       );

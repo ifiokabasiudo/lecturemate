@@ -48,8 +48,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <ChakraProvider theme={theme}>
           {progress && <TopBarProgress />}
           <Center>
-            <Box minH="100vh" minW="full" bgColor="green.200" bgSize="cover">
-              <Flex justify="center">{children}</Flex>
+            <Box minH="100vh" minW="full" 
+            // backgroundImage="url('../../../public/lmstar.png')"
+            bgColor={'#14171D'}
+            textColor={"white"}
+            backgroundImage={'./lmstar.png'}
+            backgroundSize="cover"
+            backgroundPosition="center" 
+            bgSize="cover">
+              <Flex h={'100vh'} w={"full"} position={"relative"} overflow={"hidden"}>{children}</Flex>
             </Box>
           </Center>
         </ChakraProvider>

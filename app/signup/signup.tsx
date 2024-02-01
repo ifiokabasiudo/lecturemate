@@ -18,6 +18,7 @@ import {
   InputRightElement,
   IconButton,
   useDisclosure,
+  Select,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { Formik, Form, Field } from "formik";
@@ -88,27 +89,28 @@ export default function Signup({ user }: any) {
 
   return (
     <Layout>
-      <Image
-        src="/lm-chat.png"
-        w="75%"
-        pos="fixed"
-        right="0"
-        bottom={0}
-        mb={-44}
-        mr={-60}
-        pointerEvents="none"
-      />
       <Flex
-        direction="column"
-        h="full"
-        justify="right"
-        pos="fixed"
-        bg="white"
-        w={{ base: "full", lg: "600px" }}
-        zIndex={2}
-        left={0}
-        top={0}
+       direction="column"
+       h="full"
+       bg={'#14171D'}
+       w={{ base: "full", lg: "40%" }}
+       zIndex={2}
+       position={"fixed"}
+       overflowY={"scroll"}
+       css={{
+        '&::-webkit-scrollbar': {
+          width: '4px',
+        },
+        '&::-webkit-scrollbar-track': {
+          width: '6px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: "white",
+          borderRadius: '24px',
+        },
+      }}
       >
+
         <Flex
           justify="flex-start"
           onClick={() => router.push("/")}
@@ -120,28 +122,27 @@ export default function Signup({ user }: any) {
           w="11em"
         >
           <Image
-            src="/logo.png"
+            src="/logowhite.png"
             alt="Lecture mate logo"
             w={6}
             pointerEvents="none"
           />
-          <Text fontWeight="black" fontSize={22}>
+          <Text fontWeight="black" fontSize={18}>
             Lecture Mate
           </Text>
         </Flex>
 
         <Flex
           direction="column"
-          justify="right"
-          bg="white"
-          w={{ base: "full", lg: "600px" }}
+          h={{ base: "full", lg: "80%" }}
+          w={"full"}
           py={5}
-          px={{ base: "20px", lg: "126px" }}
+          px={{ base: "20px", lg: "10%" }}
         >
-          <Text mt={10} fontSize={28} fontWeight={600}>
+          <Text mt={10} fontSize={"1.5rem"} fontWeight={600}>
             Get Started
           </Text>
-          <Text fontSize={18} fontWeight={500}>
+          <Text fontSize={"1.125rem"} fontWeight={500}>
             Create your account
           </Text>
 
@@ -162,9 +163,9 @@ export default function Signup({ user }: any) {
             <Text>Continue with Google</Text>
           </Flex> */}
           <WIPAlert isOpen={isOpen} onClose={onClose} />
-          <Flex direction="column" mt={10}>
+          <Flex fontSize={"1rem"} direction={"column"} mt={10}>
             <Formik
-              initialValues={{ username: "", email: "", country: "", password: "" }}
+              initialValues={{ username: "", email: "", country: "", institute: "", role: "", password: "" }}
               onSubmit={async (values, actions) => {
                 const { data, error } = await supabase.auth.signUp({
                   email: values.email,
@@ -173,6 +174,8 @@ export default function Signup({ user }: any) {
                     data: {
                       username: values.username,
                       country: values.country,
+                      institute: values.institute,
+                      role: values.role,
                     },
                     emailRedirectTo: `${location.origin}/auth/callback`,
                   },
@@ -259,7 +262,11 @@ export default function Signup({ user }: any) {
                           placeholder="username"
                           type="text"
                           variant="outline"
+                          border={"2px"}
+                          borderColor={"#2B2C2D"}
+                          bgColor={"#252525"}
                           mb={2}
+                          w={"100%"}
                         />
                         <FormErrorMessage>{form.errors.name}</FormErrorMessage>
                       </FormControl>
@@ -278,6 +285,9 @@ export default function Signup({ user }: any) {
                           placeholder="you@example.com"
                           type="email"
                           variant="outline"
+                          border={"2px"}
+                          borderColor={"#2B2C2D"}
+                          bgColor={"#252525"}
                           mb={2}
                         />
                         <FormErrorMessage>{form.errors.name}</FormErrorMessage>
@@ -285,28 +295,79 @@ export default function Signup({ user }: any) {
                     )}
                   </Field>
 
+                  <Flex direction={"row"} gap={4}>
+                    <Field name="country">
+                      {({ field, form }: any) => (
+                        <FormControl
+                          isInvalid={
+                            form.errors.country && form.touched.country
+                          }
+                        >
+                          <FormLabel>Country</FormLabel>
+                          <Input
+                            {...field}
+                            focusBorderColor="#53AF28"
+                            placeholder="e.g United States"
+                            type="text"
+                            variant="outline"
+                            border={"2px"}
+                            borderColor={"#2B2C2D"}
+                            bgColor={"#252525"}
+                            mb={2}
+                          />
+                          <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                        </FormControl>
+                      )}
+                    </Field>
+                    <Field name="role">
+                      {({ field, form }: any) => (
+                        <FormControl
+                          isInvalid={
+                            form.errors.role && form.touched.role
+                          }
+                        >
+                          <FormLabel>Role</FormLabel>
+                          <Input
+                            {...field}
+                            focusBorderColor="#53AF28"
+                            placeholder="e.g Student"
+                            type="text"
+                            variant="outline"
+                            border={"2px"}
+                            borderColor={"#2B2C2D"}
+                            bgColor={"#252525"}
+                            mb={2}
+                          />
+                          <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                        </FormControl>
+                      )}
+                    </Field>
+                  </Flex>
+
+                  <Field name="institute">
+                      {({ field, form }: any) => (
+                        <FormControl
+                          isInvalid={
+                            form.errors.institute && form.touched.institute
+                          }
+                        >
+                          <FormLabel>Institute</FormLabel>
+                          <Input
+                            {...field}
+                            focusBorderColor="#53AF28"
+                            placeholder="e.g United States"
+                            type="text"
+                            variant="outline"
+                            border={"2px"}
+                            borderColor={"#2B2C2D"}
+                            bgColor={"#252525"}
+                            mb={2}
+                          />
+                          <FormErrorMessage>{form.errors.name}</FormErrorMessage>
+                        </FormControl>
+                      )}
+                    </Field>
                   
-                  <Field name="country">
-                    {({ field, form }: any) => (
-                      <FormControl
-                        isInvalid={
-                          form.errors.country && form.touched.country
-                        }
-                      >
-                        <FormLabel>Country</FormLabel>
-                        <Input
-                          {...field}
-                          focusBorderColor="#53AF28"
-                          placeholder="e.g United States"
-                          type="text"
-                          variant="outline"
-                          mb={2}
-                        />
-                        <FormErrorMessage>{form.errors.name}</FormErrorMessage>
-                      </FormControl>
-                    )}
-                  </Field>
-
                   <Field name="password">
                     {({ field, form }: any) => (
                       <FormControl
@@ -319,16 +380,22 @@ export default function Signup({ user }: any) {
                           <Input
                             {...field}
                             focusBorderColor="#53AF28"
+                            bgColor={"#252525"}
+  
                             placeholder="••••••••"
                             type={show === false ? "password" : "text"}
                             variant="outline"
+                            border={"2px"}
+                            borderColor={"#2B2C2D"}
                           />
                           <InputRightElement>
                             <IconButton
-                              icon={show === false ? <IoEye /> : <IoEyeOff />}
+                              icon={show === false ? <IoEye color="white"/> : <IoEyeOff color="white"/>}
                               aria-label="show-hide password"
                               onClick={() => setShow(!show)}
                               size="sm"
+                              bgColor={"#2B2C2D"}
+                              _hover={{bgColor:"#252525"}}
                             />
                           </InputRightElement>
                         </InputGroup>
@@ -358,7 +425,7 @@ export default function Signup({ user }: any) {
                   <Button
                     mt={10}
                     w="full"
-                    bg="#53AF28"
+                    bg="#016706"
                     color="white"
                     _hover={{ bg: "#008F06" }}
                     isLoading={props.isSubmitting}
@@ -370,12 +437,12 @@ export default function Signup({ user }: any) {
                 </Form>
               )}
             </Formik>
-            <Flex gap={2} mt={{ base: 6, lg: 4 }} align="center">
+            <Flex gap={2} mt={{ base: 6, lg: 4 }} align="center" mb={"30px"}>
               <Text fontSize={{ base: "12px" }}>Already have an account?</Text>
               <Button
                 display="inline"
                 variant="link"
-                color="#53AF28"
+                color="#016706"
                 fontSize={{ base: "12px" }}
                 onClick={() =>
                   router.push(pathname === "/signin" ? "/signup" : "/signin")
@@ -388,7 +455,24 @@ export default function Signup({ user }: any) {
             </Flex>
           </Flex>
         </Flex>
+
       </Flex>
+
+
+
+
+
+
+      <Image
+        src="/lmglow.png"
+        w="75%"
+        pos="absolute"
+        top="30%"
+        left="40%"
+        pointerEvents="none"
+      />      
     </Layout>
   );
 }
+
+

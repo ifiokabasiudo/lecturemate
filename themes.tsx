@@ -37,7 +37,14 @@ textStyles: {
       background: '#474747',
       color: '#FFFFFF'
     }
-  }
+  },
+  // global: {
+  //   'html, body': {
+      
+  //     w: '100vh',
+  //     h: '100vh',
+  //   }
+  // },
 },
 
 
