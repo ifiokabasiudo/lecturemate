@@ -1501,6 +1501,8 @@ const Chat = ({ user2 }: any) => {
     institute = user2.user_metadata.institute;
   }
 
+  console.log("Na the location be that: " + country + ", " + role + ", " + institute)
+
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const {
     isOpen: isDrawerOpen,
