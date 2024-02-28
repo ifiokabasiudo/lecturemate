@@ -28,6 +28,8 @@ type Changes = {
   >;
   fileUpload: boolean;
   setFileUpload: React.Dispatch<React.SetStateAction<boolean>>;
+  url: string;
+  setUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const FileUpload = ({
@@ -39,6 +41,8 @@ const FileUpload = ({
   setSelectedPdf,
   fileUpload,
   setFileUpload,
+  url,
+  setUrl,
 }: Changes | any) => {
   const toast = useToast();
   const [token, setToken] = useState("");
@@ -171,6 +175,7 @@ const FileUpload = ({
                 console.log("Here 1");
                 setIsUploaded(!isUploaded);
                 localStorage.setItem("file", file);
+                setUrl(!url)
                 console.log("Here 2");
                 setTimer(0);
                 setTextIndex(0);

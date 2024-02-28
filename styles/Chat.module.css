@@ -12,6 +12,14 @@
     height: 500px;
 }
 
+.formBg {
+    width: 100%;
+}
+
+.transitionDo {
+    transition: all .4s ease-in-out;
+}
+
 
 @media (min-width: 320px) and (max-width: 520px) {
     .lottie {

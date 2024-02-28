@@ -1,6 +1,6 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import Signup from "./page1"
+import Page1 from "./page1"
 
 export default async function UserData() {
   const supabase = createServerComponentClient({ cookies })
@@ -18,7 +18,7 @@ export default async function UserData() {
   return (
     // {
     //   user.id ?
-      <Signup user ={user} />
+      <Page1 user ={user} />
     //   :
     // <>
     //   <a href="/signin">Click to Login</a>

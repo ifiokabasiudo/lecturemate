@@ -23,6 +23,10 @@ type User = {
   >;
   fileUpload: boolean
   setFileUpload: React.Dispatch<React.SetStateAction<boolean>>
+  reader: string
+  setReader: React.Dispatch<React.SetStateAction<string>>
+  url: string;
+  setUrl: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export default function Layout({
@@ -42,7 +46,11 @@ export default function Layout({
   setNewFile,
   setSelectedPdf,
   fileUpload,
-  setFileUpload
+  setFileUpload,
+  reader,
+  setReader,
+  url,
+  setUrl,
 }: User | any) {
   const router = useRouter();
 
@@ -53,13 +61,13 @@ export default function Layout({
         top="0"
         bgColor={"#14171D"} 
         color={"white"}
-        h={12}
+        h={{base: 24, lg: 12}}
         borderBottom={"1px"}
         borderColor={"#B8B9BB"}
-        pl={{ base: 2, md: 12 }}
+        pl={{ base: 0, md: 12 }}
         pr={{ base: 0, md: 3 }}
         alignItems="center"
-        justifyContent="space-between"
+        justifyContent={{base: "center", lg: "space-between"}}
         w="full"
         overflow="hidden"
         boxShadow="md"
@@ -71,17 +79,17 @@ export default function Layout({
           onClick={() => router.push("/")}
           cursor="pointer"
         >
-          <Image src="/logowhite.png" alt="grayaxis" w="30px" pointerEvents="none" />
+          <Image src="/logowhite.png" alt="grayaxis" w="30px" pointerEvents="none" display={{ base: "none", md: "block" }}/>
           <Text
             fontSize={18}
             fontWeight="700"
-            display={{ base: "none", md: "block" }}
+            display={{ base: "none", lg: "block" }}
           >
             Lecture Mate
           </Text>
         </Flex>
 
-        <Flex justify="flex-end">
+        <Flex w={{base:"full", lg:"auto"}} h={"full"} justify={{base:"center", lg:"flex-end"}}>
           <UserProfile
             user4={user3}
             handleClearChats={handleClearChats}
@@ -100,6 +108,10 @@ export default function Layout({
             setSelectedPdf={setSelectedPdf}
             fileUpload={fileUpload}
             setFileUpload={setFileUpload}
+            reader={reader}
+            setReader={setReader}
+            url={url}
+            setUrl={setUrl}
           />
         </Flex>
       </Flex>

@@ -56,6 +56,16 @@ import WhiteLogo from "../../../public/logowhite.png";
 import Trash from "../../../public/new_lm/Vector.png";
 import Bookmark from "../../../public/new_lm/book-bookmark-solid 1.png";
 import Image from "next/image";
+import { Viewer } from "@react-pdf-viewer/core";
+import {
+  defaultLayoutPlugin,
+  DefaultLayoutPluginProps,
+} from "@react-pdf-viewer/default-layout";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { pageNavigationPlugin } from "@react-pdf-viewer/page-navigation";
+import "@react-pdf-viewer/page-navigation/lib/styles/index.css";
+import { Worker } from "@react-pdf-viewer/core";
 
 interface RequestData {
   requestData: string;
@@ -71,7 +81,7 @@ const Chat = ({ user2 }: any) => {
   const [showInput, setShowInput] = useState(false);
   const [showChat, setShowChat] = useState(false);
   //   const [query, setQuery] = useState("");
-  //   const [result, setResult] = useState("");
+  const [reader, setReader] = useState("chat");
   const [clearChat, setClearChat] = useState<any[]>([""]);
   const [requests, setRequests] = useState<any[]>([]);
   const [responses, setResponses] = useState<any[]>([]);
@@ -85,8 +95,25 @@ const Chat = ({ user2 }: any) => {
   const [fileUpload, setFileUpload] = useState<boolean>(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [fileId, setFileId] = useState<any>();
-  const [index, setIndex] = useState<any>();
+  const [url, setUrl] = useState(true);
+  const [urlData, setUrlData] = useState(
+    "https://nixstswodrofwrvgoihr.supabase.co/storage/v1/object/public/pdfFiles/f37cefca-441b-43f3-b4b4-b2367eb8622a/The_Millionaire_Messenger_Make_a_Difference_and_a_Fortune_Sharing.pdf"
+  );
+  const [page, setPage] = useState(0);
+
+  const viewerRef = useRef(null);
+
   const fileName = localStorage.getItem("file");
+
+  const defaultLayoutPluginInstance =
+    defaultLayoutPlugin();
+    // props?: DefaultLayoutPluginProps
+
+  const pageNavigationPluginInstance =
+    pageNavigationPlugin();
+    // {enableShortcuts: true}
+
+  const { jumpToPage, CurrentPageInput } = pageNavigationPluginInstance;
 
   let username:
     | string
@@ -188,17 +215,17 @@ const Chat = ({ user2 }: any) => {
     const regexPattern1 = /Question:\/\/--([\s\S]*?)(?=(--\/\/))/;
     const matchResult1 = content.match(regexPattern1);
     const textBeforePattern1 = matchResult1 ? matchResult1[1].trim() : content;
-    console.log("Text before pattern: " + textBeforePattern1)
+    console.log("Text before pattern: " + textBeforePattern1);
     return textBeforePattern1;
-};
+  };
 
-const messageFormat = (messagesData: any[]) => {
-    const messagesWithQuestions = messagesData.map(message => {
-        if (message.role === 'user') {
-            const question = extractQuestion(message.content);
-            return { ...message, content: question };
-        }
-        return message;
+  const messageFormat = (messagesData: any[]) => {
+    const messagesWithQuestions = messagesData.map((message) => {
+      if (message.role === "user") {
+        const question = extractQuestion(message.content);
+        return { ...message, content: question };
+      }
+      return message;
     });
 
     // Set messages using useState
@@ -206,10 +233,10 @@ const messageFormat = (messagesData: any[]) => {
 
     // Logging messages
     console.log("Messages with questions:", messagesWithQuestions);
-};
+  };
 
-// Call messageFormat with your messages array
-// messageFormat(messages);
+  // Call messageFormat with your messages array
+  // messageFormat(messages);
 
   // const messageFormat = (messagesData: any[]) => {
   //   setMessages(messagesData);
@@ -254,6 +281,31 @@ const messageFormat = (messagesData: any[]) => {
 
     // return data;
   };
+
+  const pdfLoad = async () => {
+    const condition = { column_value: user2?.id };
+
+    try {
+      const { data, error } = await supabase
+        .from("booklist")
+        .select("*")
+        .eq("user_id", condition.column_value)
+        .is("clicked", true);
+
+      if (error) {
+        console.log(error);
+      } else {
+        setPage(0);
+        setUrlData(data[0].url);
+      }
+    } catch (error) {
+      console.log("There was an error fetching the pdfs: " + error);
+    }
+  };
+
+  useEffect(() => {
+    pdfLoad();
+  }, [url]);
 
   const onReload = async () => {
     const listOfPdfs = async () => {
@@ -309,7 +361,7 @@ const messageFormat = (messagesData: any[]) => {
           //   //   (prevPdfList) => [...prevPdfList, payload.new] as any[]
           //   // );
           // }
-          setMessages((current) => [...current, payload.new])
+          setMessages((current) => [...current, payload.new]);
           console.log(
             "These are the schedules why: " + JSON.stringify(pdfList, null, 2)
           );
@@ -320,20 +372,20 @@ const messageFormat = (messagesData: any[]) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }
+  };
 
   const loadMessages = async () => {
-    const history = await getChatHistory()
-    messageFormat(history)
-  }
+    const history = await getChatHistory();
+    messageFormat(history);
+  };
 
   useEffect(() => {
-    loadMessages()
-  }, [])
+    loadMessages();
+  }, []);
 
   useEffect(() => {
-    messageRealtime()
-  }, [supabase])
+    messageRealtime();
+  }, [supabase]);
 
   const realtimeReload = () => {
     onReload();
@@ -502,6 +554,8 @@ const messageFormat = (messagesData: any[]) => {
     console.log("Pdf was clicked");
     localStorage.setItem("file", pdf);
 
+    pdfLoadClick();
+    setPage(0);
     setSelectedPdf(pdf);
     setNewFile(!newFile);
     // }
@@ -694,35 +748,65 @@ const messageFormat = (messagesData: any[]) => {
 
   useEffect(() => {
     if (fileUpload) {
-      console.log("This is the file upload: " + fileUpload)
+      console.log("This is the file upload: " + fileUpload);
       onFileUpload();
     }
     setFileUpload(false);
   }, [fileUpload]);
 
-  // const sponsors = [
-  //   // { name: "Sky Waiters", img: "/skywaiter.png", role: "Investor", link: "#" },
-  // ];
   const toast = useToast();
 
-  // useEffect(() => {
-  //   const eventSource = new EventSource("https://crazy-rose-leg-warmers.cyclic.app/api/api")
+  const pdfLoadClick = async () => {
+    const condition = { column_value: user2?.id };
 
-  //   eventSource.onmessage = (event) => {
-  //     const responseData = JSON.parse(event.data).response
-  //     console.log('These are the chunks: ' + responseData)
-  //     handleStoreResponses(responseData)
-  //   }
+    try {
+      // First, set all clicked values to false for the user's PDFs
+      const { data: updateData, error: updateError } = await supabase
+        .from("booklist")
+        .update({ clicked: false })
+        .eq("user_id", condition.column_value);
 
-  //   eventSource.onerror = (error) => {
-  //     console.error('Error: ' + error)
-  //   }
-  // }, [])
+      if (updateError) {
+        console.log(updateError);
+        throw new Error("Error updating clicked status for unclicked PDFs");
+      } else {
+        console.log("Successfully updated clicked status for unclicked PDFs");
+      }
+
+      // Then, set the clicked value to true only for the newly uploaded PDF
+      const { data: updatedData, error: insertError } = await supabase
+        .from("booklist")
+        .update({ clicked: true })
+        .eq("user_id", condition.column_value)
+        .eq("book_name", localStorage.getItem("file"));
+
+      if (insertError) {
+        console.log(insertError);
+        throw new Error("Error updating clicked status for new PDF");
+      } else {
+        pdfLoad();
+        console.log("New PDF clicked status updated successfully");
+      }
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  };
+
+  const onPageClick = (page: number) => {
+    jumpToPage(page);
+  };
 
   return (
     <Suspense fallback={<Loading />}>
       <Flex bg="#F8FCF7">
-        <Flex w="full" direction="row">
+        <Flex
+          w="full"
+          direction="row"
+          justifyContent={"center"}
+          h="100vh"
+          overflow={"hidden"}
+        >
           <Layout
             user3={user2}
             handleClearChats={handleClearChats}
@@ -741,6 +825,10 @@ const messageFormat = (messagesData: any[]) => {
             setSelectedPdf={setSelectedPdf}
             fileUpload={fileUpload}
             setFileUpload={setFileUpload}
+            reader={reader}
+            setReader={setReader}
+            url={url}
+            setUrl={setUrl}
           />
           {/* <Flex
             direction="row"
@@ -748,7 +836,7 @@ const messageFormat = (messagesData: any[]) => {
           > */}
           <Flex
             direction="column"
-            h="100vh"
+            // h="100vh"
             w="22%"
             bgColor={"#14171D"}
             borderRight={"1px"}
@@ -975,15 +1063,16 @@ const messageFormat = (messagesData: any[]) => {
           </Flex>
           <Flex
             direction="column"
-            h="100vh"
-            w="39%"
+            // h="100vh"
+            w={{ base: "100%", md: "60%", lg: "45%" }}
             bgColor={"#14171D"}
             borderRight={"1px"}
             borderColor={"#B8B9BB"}
             px={5}
             zIndex={2}
-            display={{ base: "none", lg: "flex" }}
+            display={reader === "reader" ? {} : { base: "none", md: "flex" }}
             overflowY={"scroll"}
+            overflowX={"hidden"}
             css={{
               "&::-webkit-scrollbar": {
                 width: "4px",
@@ -996,7 +1085,21 @@ const messageFormat = (messagesData: any[]) => {
                 borderRadius: "24px",
               },
             }}
-          ></Flex>
+          >
+            <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+              <Viewer
+                fileUrl={urlData}
+                defaultScale={1}
+                plugins={[
+                  // Register plugins
+                  defaultLayoutPluginInstance,
+                  pageNavigationPluginInstance,
+
+                  // ...
+                ]}
+              />
+            </Worker>
+          </Flex>
           {/* {requests.length <= 0 && (
               <Flex
                 direction="column"
@@ -1071,7 +1174,10 @@ const messageFormat = (messagesData: any[]) => {
             bgColor={"#14171D"}
             ml="0"
             mt={12}
-            w="39%"
+            w={{ base: "100%", md: "40%", lg: "33%" }}
+            display={reader === "chat" ? {} : { base: "none", md: "flex" }}
+            // h="100vh"
+            // display={{ base: "none", lg: "flex" }}
           >
             <Flex
               w={"100%"}
@@ -1145,87 +1251,109 @@ const messageFormat = (messagesData: any[]) => {
               >
                 {" "}
                 {/* {requestsWithQuestions.map((request, index) => ( */}
-                {
-                messages.length <= 0 ? <></> :
-                messages.map((message: any, index: any) => (
-                  <Flex direction="column" key={index}>
-                    <Box
-                      bg="transparent"
-                      w="full"
-                      maxH="full"
-                      borderBottom={"1px"}
-                      borderColor={"#B8B9BB"}
-                      color={"white"}
-                      py={5}
-                      px={4}
-                      ml="auto"
-                    >
-                      {message.role === "user" && user2 ? (
+                {messages.length <= 0 ? (
+                  <></>
+                ) : (
+                  messages.map((message: any, index: any) => (
+                    <Flex direction="column" key={index}>
+                      <Box
+                        bg="transparent"
+                        w="full"
+                        maxH="full"
+                        borderBottom={"1px"}
+                        borderColor={"#B8B9BB"}
+                        color={"white"}
+                        py={5}
+                        px={4}
+                        ml="auto"
+                      >
+                        {message.role === "user" && user2 ? (
+                          <Flex
+                            zIndex={2}
+                            w={8}
+                            h={8}
+                            p={"1"}
+                            justify={"center"}
+                            alignItems={"center"}
+                            borderRadius={"full"}
+                            bgColor={"#FF6B00"}
+                            fontSize={"1rem"}
+                            fontWeight={500}
+                            mr={18}
+                            float={"left"}
+                          >
+                            <Text>
+                              {username !== null &&
+                                username !== undefined &&
+                                username[0]}
+                            </Text>
+                          </Flex>
+                        ) : message.role === "assistant" ? (
+                          <Flex float={"left"} mr={18}>
+                            <Image
+                              src={WhiteLogo}
+                              width={30}
+                              alt="white logo"
+                            />
+                          </Flex>
+                        ) : (
+                          <></>
+                        )}
                         <Flex
-                          zIndex={2}
-                          w={8}
-                          h={8}
-                          p={"1"}
-                          justify={"center"}
-                          alignItems={"center"}
-                          borderRadius={"full"}
-                          bgColor={"#FF6B00"}
-                          fontSize={"1rem"}
-                          fontWeight={500}
-                          mr={18}
-                          float={"left"}
+                          direction="column"
+                          justify="space-between"
+                          w="80%"
                         >
-                          <Text>
-                            {username !== null &&
-                              username !== undefined &&
-                              username[0]}
-                          </Text>
-                        </Flex>
-                      ) : message.role === "assistant" ? (
-                        <Flex float={"left"} mr={18}>
-                          <Image src={WhiteLogo} width={30} alt="white logo" />
-                        </Flex>
-                      ) : <></>}
-                      <Flex direction="column" justify="space-between" w="80%">
-                        {/* <Text>{query}</Text> */}
-                        {/* <div
+                          {/* <Text>{query}</Text> */}
+                          {/* <div
                           key={index}
                           dangerouslySetInnerHTML={{
                             __html: request.content.replace(/\\n|\n/g, "<br>"),
                           }}
                         /> */}
-                        {message.content && <div
-                          key={index}
-                          dangerouslySetInnerHTML={{
-                            __html: message.content.replace(/\\n|\n/g, "<br>"),
-                          }}
-                        />}
-                        {message.role === "user" && message.time ? (
-                          <Text
-                            fontSize={"0.8rem"}
-                            mt={2}
-                            textColor={"gray.400"}
-                          >
-                            {message.time}
-                          </Text>
-                        ) : message.role === "assistant" && message.pages ? (
-                          <Flex
-                            fontSize={"0.9rem"}
-                            mt={5}
-                            textColor={"gray.400"}
-                            textDecoration={"underline"}
-                            alignItems={"center"}
-                          >
-                            <Flex float={"left"} mr={2}>
-                              <Image src={Bookmark} width={16} alt="bookmark" />
+                          {message.content && (
+                            <div
+                              key={index}
+                              dangerouslySetInnerHTML={{
+                                __html: message.content.replace(
+                                  /\\n|\n/g,
+                                  "<br>"
+                                ),
+                              }}
+                            />
+                          )}
+                          {message.role === "user" && message.time ? (
+                            <Text
+                              fontSize={"0.8rem"}
+                              mt={2}
+                              textColor={"gray.400"}
+                            >
+                              {message.time}
+                            </Text>
+                          ) : message.role === "assistant" && message.pages ? (
+                            <Flex
+                              fontSize={"0.9rem"}
+                              mt={5}
+                              textColor={"gray.400"}
+                              textDecoration={"underline"}
+                              alignItems={"center"}
+                              onClick={() => onPageClick(message.pages)}
+                              _hover={{ cursor: "pointer" }}
+                            >
+                              <Flex float={"left"} mr={2}>
+                                <Image
+                                  src={Bookmark}
+                                  width={16}
+                                  alt="bookmark"
+                                />
+                              </Flex>
+                              {message.pages}
                             </Flex>
-                            {message.pages}
-                          </Flex>
-                        ) : (
-                          <></>
-                        )}
-                        {/* <Text key={index}>{request.content}</Text> */}
-                        {/* <Text
+                          ) : (
+                            <></>
+                          )}
+                          {/* <Text key={index}>{request.content}</Text> */}
+                          {/* <Text
                               fontSize={11}
                               mt={2}
                               ml="auto"
@@ -1234,101 +1362,102 @@ const messageFormat = (messagesData: any[]) => {
                             >
                               {username}
                             </Text> */}
-                      </Flex>
-                    </Box>
-                  </Flex>
+                        </Flex>
+                      </Box>
+                    </Flex>
 
-                  // {index >= responses.length ? (
-                  //   <Box
-                  //     bg="white"
-                  //     h="full"
-                  //     w={"100%"}
-                  //     mt={20}
-                  //     py={2}
-                  //     px={4}
-                  //     mb={5}
-                  //     borderRadius={8}
-                  //     border="2px solid"
-                  //     borderColor="gray.100"
-                  //     display={responses.length <= 0 ? "none" : "block"}
-                  //   >
-                  //     <Flex
-                  //       direction="column"
-                  //       justify="center"
-                  //       textAlign={"center"}
-                  //     >
-                  //       <Text>
-                  //         There was an error processing your request please
-                  //         try again
-                  //       </Text>
-                  //       <Button
-                  //         type="submit"
-                  //         mt={4}
-                  //         // onClick={handleFormSubmit}
-                  //         onClick={handleRetry}
-                  //         color="#53AF28"
-                  //         border="1px solid #53AF28"
-                  //         _hover={{ bg: "#53AF28", color: "white" }}
-                  //         variant="outline"
-                  //         isLoading={isLoading}
-                  //       >
-                  //         Retry
-                  //       </Button>
-                  //     </Flex>
-                  //   </Box>
-                  // ) : (
-                  //   <Box
-                  //     bg="transparent"
-                  //     w="full"
-                  //     maxH="full"
-                  //     borderBottom={"1px"}
-                  //     borderColor={"#B8B9BB"}
-                  //     color={"white"}
-                  //     py={5}
-                  //     px={4}
-                  //     ml="auto"
-                  //     display={responses.length <= 0 ? "none" : "block"}
-                  //   >
-                  //     <Flex float={"left"} mr={18}>
-                  //       <Image src={WhiteLogo} width={30} alt="white logo" />
-                  //     </Flex>
-                  //     <Flex
-                  //       direction="column"
-                  //       justify="space-between"
-                  //       w="80%"
-                  //     >
-                  //       {/* <Text key={index}>{responses[index].content}</Text> */}
-                  //       <div
-                  //         dangerouslySetInnerHTML={{
-                  //           __html: responses[index].content.replace(
-                  //             /\\n|\n/g,
-                  //             "<br>"
-                  //           ),
-                  //         }}
-                  //       />
-                  //       {responses[index].pages && (
-                  //         <Flex
-                  //           fontSize={"0.9rem"}
-                  //           mt={5}
-                  //           textColor={"gray.400"}
-                  //           textDecoration={"underline"}
-                  //           alignItems={"center"}
-                  //         >
-                  //           <Flex float={"left"} mr={2}>
-                  //             <Image
-                  //               src={Bookmark}
-                  //               width={16}
-                  //               alt="bookmark"
-                  //             />
-                  //           </Flex>
-                  //           {responses[index].pages}
-                  //         </Flex>
-                  //       )}
-                  //     </Flex>
-                  //   </Box>
-                  // )}
-                  // </Flex>
-                ))}
+                    // {index >= responses.length ? (
+                    //   <Box
+                    //     bg="white"
+                    //     h="full"
+                    //     w={"100%"}
+                    //     mt={20}
+                    //     py={2}
+                    //     px={4}
+                    //     mb={5}
+                    //     borderRadius={8}
+                    //     border="2px solid"
+                    //     borderColor="gray.100"
+                    //     display={responses.length <= 0 ? "none" : "block"}
+                    //   >
+                    //     <Flex
+                    //       direction="column"
+                    //       justify="center"
+                    //       textAlign={"center"}
+                    //     >
+                    //       <Text>
+                    //         There was an error processing your request please
+                    //         try again
+                    //       </Text>
+                    //       <Button
+                    //         type="submit"
+                    //         mt={4}
+                    //         // onClick={handleFormSubmit}
+                    //         onClick={handleRetry}
+                    //         color="#53AF28"
+                    //         border="1px solid #53AF28"
+                    //         _hover={{ bg: "#53AF28", color: "white" }}
+                    //         variant="outline"
+                    //         isLoading={isLoading}
+                    //       >
+                    //         Retry
+                    //       </Button>
+                    //     </Flex>
+                    //   </Box>
+                    // ) : (
+                    //   <Box
+                    //     bg="transparent"
+                    //     w="full"
+                    //     maxH="full"
+                    //     borderBottom={"1px"}
+                    //     borderColor={"#B8B9BB"}
+                    //     color={"white"}
+                    //     py={5}
+                    //     px={4}
+                    //     ml="auto"
+                    //     display={responses.length <= 0 ? "none" : "block"}
+                    //   >
+                    //     <Flex float={"left"} mr={18}>
+                    //       <Image src={WhiteLogo} width={30} alt="white logo" />
+                    //     </Flex>
+                    //     <Flex
+                    //       direction="column"
+                    //       justify="space-between"
+                    //       w="80%"
+                    //     >
+                    //       {/* <Text key={index}>{responses[index].content}</Text> */}
+                    //       <div
+                    //         dangerouslySetInnerHTML={{
+                    //           __html: responses[index].content.replace(
+                    //             /\\n|\n/g,
+                    //             "<br>"
+                    //           ),
+                    //         }}
+                    //       />
+                    //       {responses[index].pages && (
+                    //         <Flex
+                    //           fontSize={"0.9rem"}
+                    //           mt={5}
+                    //           textColor={"gray.400"}
+                    //           textDecoration={"underline"}
+                    //           alignItems={"center"}
+                    //         >
+                    //           <Flex float={"left"} mr={2}>
+                    //             <Image
+                    //               src={Bookmark}
+                    //               width={16}
+                    //               alt="bookmark"
+                    //             />
+                    //           </Flex>
+                    //           {responses[index].pages}
+                    //         </Flex>
+                    //       )}
+                    //     </Flex>
+                    //   </Box>
+                    // )}
+                    // </Flex>
+                  ))
+                )}
               </Flex>
             </Flex>
 
@@ -1346,8 +1475,7 @@ const messageFormat = (messagesData: any[]) => {
                 borderColor={"#B8B9BB"}
                 bgColor={"#14171D"}
                 w={"full"}
-                pt={"4"}
-                pb={"4"}
+                p={4}
               >
                 <Formik
                   initialValues={{ query: "" }}
@@ -1418,106 +1546,109 @@ const messageFormat = (messagesData: any[]) => {
                   }}
                 >
                   {(props) => (
-                    <Form>
-                      <Field name="query">
-                        {({ field, form }: any) => (
-                          <FormControl>
-                            <InputGroup>
-                              <Textarea
-                                resize="none"
-                                bg="transparent"
-                                border={"1px"}
-                                color={"white"}
-                                borderColor={"#B8B9BB"}
-                                {...field}
-                                maxH={"60px"}
-                                minH="30px"
-                                justifyItems="center"
-                                pr="10"
-                                css={{
-                                  "&:: -webkit-scrollbar": {
-                                    display: "none",
-                                  },
-                                  "&:: -ms-overflow-style": "none",
-                                  "&:: scrollbar-width": "none",
-                                }}
-                                borderTopLeftRadius="md"
-                                borderTopRightRadius="md"
-                                borderBottomLeftRadius={"0"}
-                                borderBottomRightRadius={"0"}
-                                placeholder="What would you like to ask?"
-                                focusBorderColor="#005103"
-                                style={{
-                                  // height: textareaHeight,
-                                  // textAlign: 'center', // Align text vertically in the center
-                                  width: "400px",
-                                  // lineHeight: "2.5", // Set line height to control the vertical centering
-                                }}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    if (!e.shiftKey) {
-                                      e.preventDefault(); // Prevent the default behavior of Enter key (submit the form)
-                                      if (field.value.trim().length > 0) {
-                                        props.submitForm(); // Submit the form when Enter is pressed (without Shift key) and the field is not empty
-                                      }
-                                    } else {
-                                      // Add a new line by inserting a newline character
-                                      const currentValue = (
-                                        e.target as HTMLTextAreaElement
-                                      ).value;
-                                      const selectionStart = (
-                                        e.target as HTMLTextAreaElement
-                                      ).selectionStart;
-                                      const newValue =
-                                        currentValue.substring(
-                                          0,
-                                          selectionStart
-                                        ) +
-                                        "\n" +
-                                        currentValue.substring(
-                                          (e.target as HTMLTextAreaElement)
-                                            .selectionEnd
+                    <Flex w={"100%"}>
+                      <Form className={styles.formBg}>
+                        <Field name="query" width={"full"}>
+                          {({ field, form }: any) => (
+                            <FormControl width={"full"}>
+                              <InputGroup width={"full"}>
+                                <Textarea
+                                  resize="none"
+                                  bg="transparent"
+                                  border={"1px"}
+                                  color={"white"}
+                                  borderColor={"#B8B9BB"}
+                                  {...field}
+                                  maxH={"60px"}
+                                  minH="30px"
+                                  justifyItems="center"
+                                  pr="10"
+                                  css={{
+                                    "&:: -webkit-scrollbar": {
+                                      display: "none",
+                                    },
+                                    "&:: -ms-overflow-style": "none",
+                                    "&:: scrollbar-width": "none",
+                                  }}
+                                  borderTopLeftRadius="md"
+                                  borderTopRightRadius="md"
+                                  borderBottomLeftRadius={"0"}
+                                  borderBottomRightRadius={"0"}
+                                  placeholder="What would you like to ask?"
+                                  focusBorderColor="#005103"
+                                  width={"full"}
+                                  // style={{
+                                  //   // height: textareaHeight,
+                                  //   // textAlign: 'center', // Align text vertically in the center
+                                  //   width: "100%",
+                                  //   // lineHeight: "2.5", // Set line height to control the vertical centering
+                                  // }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      if (!e.shiftKey) {
+                                        e.preventDefault(); // Prevent the default behavior of Enter key (submit the form)
+                                        if (field.value.trim().length > 0) {
+                                          props.submitForm(); // Submit the form when Enter is pressed (without Shift key) and the field is not empty
+                                        }
+                                      } else {
+                                        // Add a new line by inserting a newline character
+                                        const currentValue = (
+                                          e.target as HTMLTextAreaElement
+                                        ).value;
+                                        const selectionStart = (
+                                          e.target as HTMLTextAreaElement
+                                        ).selectionStart;
+                                        const newValue =
+                                          currentValue.substring(
+                                            0,
+                                            selectionStart
+                                          ) +
+                                          "\n" +
+                                          currentValue.substring(
+                                            (e.target as HTMLTextAreaElement)
+                                              .selectionEnd
+                                          );
+                                        (
+                                          e.target as HTMLTextAreaElement
+                                        ).value = newValue;
+                                        // Trigger onChange event manually to update Formik state
+                                        (
+                                          e.target as HTMLTextAreaElement
+                                        ).dispatchEvent(
+                                          new Event("input", { bubbles: true })
                                         );
-                                      (e.target as HTMLTextAreaElement).value =
-                                        newValue;
-                                      // Trigger onChange event manually to update Formik state
-                                      (
-                                        e.target as HTMLTextAreaElement
-                                      ).dispatchEvent(
-                                        new Event("input", { bubbles: true })
-                                      );
-                                      e.preventDefault(); // Prevent the default behavior of Enter key (new line)
+                                        e.preventDefault(); // Prevent the default behavior of Enter key (new line)
+                                      }
                                     }
-                                  }
-                                }}
-                              />
-                              <InputRightElement>
-                                <IconButton
-                                  icon={<IoPaperPlane />}
-                                  variant="solid"
-                                  bg={"#53AF28"}
-                                  color="#F8FCF7"
-                                  _hover={{ bg: "#005103", color: "white" }}
-                                  // py={4}
-                                  aria-label="send message"
-                                  w="6"
-                                  h="6"
-                                  // mt={5}
-                                  mr={7}
-                                  type="submit"
-                                  isDisabled={
-                                    !props.isValid || !props.dirty
-                                      ? true
-                                      : false
-                                  }
-                                  isLoading={props.isSubmitting}
+                                  }}
                                 />
-                              </InputRightElement>
-                            </InputGroup>
-                          </FormControl>
-                        )}
-                      </Field>
-                      {/* <Flex w="full">
+                                <InputRightElement>
+                                  <IconButton
+                                    icon={<IoPaperPlane />}
+                                    variant="solid"
+                                    bg={"#53AF28"}
+                                    color="#F8FCF7"
+                                    _hover={{ bg: "#005103", color: "white" }}
+                                    // py={4}
+                                    aria-label="send message"
+                                    w="6"
+                                    h="6"
+                                    // mt={5}
+                                    mr={7}
+                                    type="submit"
+                                    isDisabled={
+                                      !props.isValid || !props.dirty
+                                        ? true
+                                        : false
+                                    }
+                                    isLoading={props.isSubmitting}
+                                  />
+                                </InputRightElement>
+                              </InputGroup>
+                            </FormControl>
+                          )}
+                        </Field>
+                        {/* <Flex w="full">
                         <Button
                           onClick={handleClick}
                           mt={2}
@@ -1546,11 +1677,12 @@ const messageFormat = (messagesData: any[]) => {
                           )}
                         </Field>
                       </Flex> */}
-                    </Form>
+                      </Form>
+                    </Flex>
                   )}
                 </Formik>
                 <Flex
-                  w={"400px"}
+                  w={"100%"}
                   h={"30px"}
                   px={4}
                   py={2}
@@ -1600,6 +1732,8 @@ const messageFormat = (messagesData: any[]) => {
               setSelectedPdf={setSelectedPdf}
               fileUpload={fileUpload}
               setFileUpload={setFileUpload}
+              url={url}
+              setUrl={setUrl}
             />
           </ModalBody>
         </ModalContent>
