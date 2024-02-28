@@ -160,8 +160,8 @@ const FileUpload = ({
               const fileURL = data.publicUrl;
 
               const response = await axios.post(
-                // "https://lm-backend.eastus.cloudapp.azure.com/api/upload",
-                "http://localhost:4000/api/upload/",
+                "https://lm-backend.eastus.cloudapp.azure.com/api/upload",
+                // "http://localhost:4000/api/upload/",
                 // "https://api.greynote.app/lecture/api/upload",
                 {
                   url: fileURL,
